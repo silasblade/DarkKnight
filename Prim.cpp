@@ -2,8 +2,6 @@
 #include <fstream>
 #include <string>
 #include <limits.h>
-#include <conio.h>
-#include <Windows.h>
 using namespace std;
 
 struct graph //Khai báo cấu trúc đồ thị với số đỉnh và độ dài các cạnh
@@ -92,5 +90,6 @@ int main()
    graph u;
    readgraph(u);
    prim(u);
-   system("pause");
+   int trash;
+   cin >> trash;
 }
