@@ -9,7 +9,7 @@ struct graph //Khai báo cấu trúc đồ thị với số đỉnh và độ d�
     int sodinh;
     int dd[100][100];
 };
-
+string cactinh[50];
 void readgraph(graph &u) //Đọc ma trận kề có trọng số từ file
 {
     ifstream is("graph.txt"); //Cú pháp mở file
@@ -18,6 +18,12 @@ void readgraph(graph &u) //Đọc ma trận kề có trọng số từ file
     for(int j=0; j<u.sodinh; j++)
     {
         is >> u.dd[i][j];
+    }
+
+    is.ignore();
+    for(int i=0; i<u.sodinh; i++)
+    {
+        getline(is, cactinh[i]);
     }
 }
 
@@ -71,10 +77,10 @@ void prim(graph u)
 
     for(int i=1; i<u.sodinh; i++) // Vòng lặp xuất ra các đỉnh nối với nhau và trọng số của chúng
     {
-        cout << branch[i] << "--" << i << " = " << vex[i] << endl;
+        cout << cactinh[branch[i]] << "--" << cactinh[i] << " = " << vex[i] << endl;
     }
 
-    wcout << "Tong trong so cay khung: ";
+    cout << "Tong chieu dai cay khung duong sat ngan nhat can phai xay dung la:: ";
     int S=0;
     for(int i=0; i<u.sodinh; i++)
     {

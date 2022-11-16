@@ -2,6 +2,7 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+#include <string>
 using namespace std;
 
 bool visited[100];
@@ -14,6 +15,7 @@ struct graph //Cấu trúc ma trận kề có trọng số của đồ thị
 
 graph caykhung; //Đồ thị sẽ lưu trữ cây khung
 bool makecycle; //Biến kiểm tra xem khi chọn cạnh có tạo chu trình hay không
+string cactinh[50];
 
 struct edge //Cấu trúc các cạnh của đồ thị
 {
@@ -34,6 +36,15 @@ void readgraph(graph &u) //Hàm đọc ma trận từ đồ thị
         }
     }
     caykhung.sodinh=u.sodinh; //Gán cho số đỉnh của cây = ma trận
+    
+    is.ignore();
+    for(int i=0; i<u.sodinh; i++)
+    {
+        getline(is, cactinh[i]);
+    }
+
+
+
 }
 
 void cycle(int x, int y) //Hàm kiểm tra có tạo ra chu trình hay không
@@ -62,10 +73,10 @@ void prin(vector<edge> eg)//Hàm in các cạnh có trong cây khung
 
     for(int i=0; i<eg.size(); i++)
     {
-        cout << eg[i].a << "--" << eg[i].b << " = " << eg[i].e << endl; 
+        cout << cactinh[eg[i].a] << "--" << cactinh[eg[i].b] << " = " << eg[i].e << endl; 
         s+=eg[i].e;
     }
-    cout << "Tong trong so cay khung: ";
+    cout << "Tong chieu dai cay khung duong sat ngan nhat can phai xay dung la: ";
     cout << s;
 }
 
