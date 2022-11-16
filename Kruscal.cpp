@@ -141,11 +141,7 @@ void Kruscal(graph u)
     }
 
     prin(eg);
-    
-    
 
-    
-    
  
 }
 
