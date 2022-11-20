@@ -2,85 +2,69 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
-
+#include <string>
 using namespace std;
 
-struct graph //Khai báo cấu trúc đồ thị với số đỉnh và độ dài các cạnh
+bool visited[100];
+
+struct graph //Cấu trúc ma trận kề có trọng số của đồ thị
 {
-    int sodinh;       //Số đỉnh
-    int dd[100][100]; //Ma trận kề có trọng số
+    int sodinh=0;
+    int dd[50][50]={0};
 };
 
-struct edge //Cấu trúc cạnh
+graph caykhung; //Đồ thị sẽ lưu trữ cây khung
+bool makecycle; //Biến kiểm tra xem khi chọn cạnh có tạo chu trình hay không
+string cactinh[50];
+
+struct edge //Cấu trúc các cạnh của đồ thị
 {
-    int a; //Đỉnh đầu
-    int e; //Độ dài cạnh
-    int b; //Đỉnh đuôi
+    int a;
+    int e;
+    int b;
 };
 
-bool edgecheck[100]; //Kiểm tra cạnh đã đi qua chưa. Dùng cho duyệt đồ thị
-bool visitid;        //Kiểm tra trả về kết quả dùng cho việc xét có tạo ra chu trình hay không
-
-void readgraph(graph &u) //Đọc ma trận kề có trọng số từ file
+void readgraph(graph &u) //Hàm đọc ma trận từ đồ thị
 {
-    ifstream is("graph.txt"); //Cú pháp mở file
-    is >> u.sodinh; //Nhập số đỉnh là thông tin đầu tiên của file
-    for(int i=0; i<u.sodinh; i++) //Thủ tục nhập các cạnh của đồ thị vào
-    for(int j=0; j<u.sodinh; j++)
+    ifstream is("graph.txt");
+    is >> u.sodinh;
+    for(int i=0; i<u.sodinh; i++)
     {
-        is >> u.dd[i][j];
-    }
-}
-
-
-
-
-void swap(edge &a, edge &b) //Hàm hoán đổi hai cạnh, dùng cho việc sắp xếp thứ tự độ dài cạnh
-{
-    edge temp;
-    temp.a=a.a;
-    temp.b=a.b;
-    temp.e=a.e;
-
-    a.a=b.a;
-    a.b=b.b;
-    a.e=b.e;
-
-    b.a=temp.a;
-    b.b=temp.b;
-    b.e=temp.e;
-}
-
-bool checkexist(int x, int y, vector<edge> eg) //Hàm kiểm tra cây khung đang chọn đã bao gồm cạnh này chưa
-{
-    for(int i=0; i<eg.size(); i++)
-    {
-        if(x==eg[i].a && y==eg[i].b && edgecheck[i]==false) {edgecheck[i]=true; return 1;} //Nếu đỉnh đầu và đỉnh cuối của cạnh đưa vào có tồn tại trong cây khung đang chọn hay chưa
-        if(x==eg[i].b && y==eg[i].a && edgecheck[i]==false) {edgecheck[i]=true; return 1;}
-    }
-    return 0;
-}
-
-void checklt(graph u, int x, int y, bool visited[], vector<edge> eg) //Hàm kiểm tra xem có tạo ra chu trình hay không
-{
-    for(int i=0; i<u.sodinh; i++) //Duyệt cây bắt đầu từ đỉnh của cạnh đang xét có tạo ra chu trình hay không, nếu cây chứa đỉnh còn lại thì tạo ra chu trình 
-    {
-        if(visitid==true) break; //Nếu visitid == true thì hủy vòng lặp, từ đỏ hủy dần quá trình đệ quy nhiều lần.
-        //if(u.dd[x][i] > 0 && visited[i]==true)  
-        if(checkexist(x,i,eg)) //Xét những cạnh có trong cây khung đã chọn chứa đỉnh đang xét 
+        for(int j=0; j<u.sodinh; j++)
         {
-            if(i==y || visitid==true) {visitid=true; break;} //Nếu đỉnh bất kỳ có trong cây liên quan tới đỉnh đầu có chứa đỉnh cuối thì xác nhận tạo ra chu trình
-            checklt(u, i, y, visited, eg);                   //Gọi đệ quy kiểm tra nếu đỉnh đuôi còn xét tiếp với những cạnh nối với đỉnh này
+            is >> u.dd[i][j];
         }
     }
+    caykhung.sodinh=u.sodinh; //Gán cho số đỉnh của cây = ma trận
+    is.ignore();
+    for(int i=0; i<u.sodinh; i++)
+    {
+        getline(is, cactinh[i]);
+    }
+    is.close();
 }
 
-void sortrank(vector<edge> &ed) //Hàm sắp xếp các cạnh từ bé đến lớn
+void cycle(int x, int y) //Hàm kiểm tra có tạo ra chu trình hay không
 {
-    for (int i = 0; i < ed.size(); i++)
-    for (int j = i; j < ed.size(); j++)
-    if(ed[j].e < ed[i].e) swap(ed[j], ed[i]);
-    cout << endl;
+    //Ý tưởng thuật toán: Đưa vào hai đỉnh của một cạnh. Xét tất cả các đỉnh liên thông với đỉnh đầu (đỉnh x(a)) của cạnh này. 
+    //Các đối tượng xét chỉ bao gồm các cạnh đã chọn để sau này làm cây khung ngắn nhất.
+    //Nếu trong số các đỉnh liên thông với đỉnh đầu bao gồm đỉnh cuối (đỉnh y(b)) của cạnh đó thì ghi nhận là tạo ra chu trình. Hủy thuật toán.
+    //Visited dùng để ghi nhận đỉnh này đã xét.
+    for(int i=0; i< caykhung.sodinh; i++)
+    {
+        visited[x]=true;                                       //Coi như đỉnh này đã được xét qua.
+        //Nếu đỉnh x đang xét chính là đỉnh y thì coi như tạo ra chu trình. Hủy hàm. Ghi nhận rằng tạo ra chu trình (makecycle=true);
+        if(x==y || makecycle==true) {makecycle=true; break;}   
+        //Xét các đỉnh nối với đỉnh x.
+        if(caykhung.dd[x][i] > 0 && !visited[i])  
+        //Đệ quy quay lại xét các đỉnh liên thông với x mới chính là đỉnh nối với x trước.             
+        cycle(i, y);
+    }
+}
+
+bool compare(edge a, edge b) //Hàm so sánh. Dùng để sử dụng hàm sort các struct.
+{
+    return a.e < b.e;
 }
 
 void prin(vector<edge> eg)//Hàm in các cạnh có trong cây khung
@@ -89,24 +73,25 @@ void prin(vector<edge> eg)//Hàm in các cạnh có trong cây khung
 
     for(int i=0; i<eg.size(); i++)
     {
-        cout << eg[i].a << "--" << eg[i].b << " = " << eg[i].e << endl; 
+        cout << cactinh[eg[i].a] << "--" << cactinh[eg[i].b] << " = " << eg[i].e << endl; 
         s+=eg[i].e;
     }
-    cout << "Tong trong so cay khung: ";
-    cout << s;
+    cout << "Tong chieu dai cay khung duong sat ngan nhat can phai xay dung la: ";
+    cout << s << endl;
+
+    for(int i=0; i<caykhung.sodinh; i++)
+    {
+        for(int j=0; j<caykhung.sodinh; j++)
+        {
+            cout << caykhung.dd[i][j] << " ";
+        }
+        cout << endl;
+    }
 }
 
-void Kruscal(graph u)
+void kruscal(graph u)
 {
-    vector<edge> eg; //Tập các cạnh sẽ được chọn làm cây khung ngắn nhất
-
-    bool vexcheck[100]; //Tập các đỉnh và xác định chúng đã bao gồm trong cây hay chưa
-    for(int i=0; i<u.sodinh; i++) //Gán cho tất cả các đỉnh đều chưa chứa trong cây
-    {
-        vexcheck[i]=false;
-    }
-
-    vector<edge> ed; //Tập các cạnh tồn tại trong đồ thị
+    vector<edge> ed;                //Tập các cạnh tồn tại trong đồ thị
     for(int i=0; i<u.sodinh; i++)
     for(int j=i; j<u.sodinh; j++)
     {
@@ -120,36 +105,34 @@ void Kruscal(graph u)
         }
     }
 
-    sortrank(ed);// Sắp xếp các cạnh theo thứ tự tăng dần
-    
-    for(int i=0; i<ed.size(); i++)//Duyệt tất cả các cạnh từ bé đến lớn
-    {   
-        visitid=false; //Đặt mặc định là cạnh không tạo ra chu trình
-        for(int i=0; i<eg.size(); i++) //Đặt mặc định là các tất cả các cạnh đều chưa xét đã đi qua chưa
-        {
-              edgecheck[i]=false;
-        }
+    sort(ed.begin(), ed.end(), compare); //Sắp xếp các cạnh từ bé đến lớn
 
-        checklt(u, ed[i].a, ed[i].b, vexcheck, eg); //Hàm kiểm tra xem có tạo ra chu trình hay không
+    vector<edge> eg;                     //Tập chứa các cạnh có trong cây khung cuối cùng
+    for(int i=0; i< ed.size(); i++)      //Xét từng cạnh của đồ thị 
+    {
+        makecycle=false;                 //Gán giá trị tạo chu trình = 0 để sử dụng cho hàm xét chu trình.
+        for(int j=0; j<u.sodinh; j++)    //Gán giá trị các cạnh đã xét = 0 để sử dụng cho hàm xét chu trình
+        visited[j] = {false};
 
-        if(visitid==false) //Nếu mà sau khi xét xong vẫn không tạo ra chu trình thì thêm cạnh vào cây khung
+        cycle(ed[i].a, ed[i].b);         //Xét tạo ra chu trình không
+
+        if(makecycle==false)             //Sau khi xét mà giá trị tạo chu trình vẫn bằng false thì ghi nhận cạnh này vào cây khung.
         {
-            eg.push_back(ed[i]);
-            vexcheck[ed[i].a]=true; //Đặt các đỉnh đều đã được xét
-            vexcheck[ed[i].b]=true;
+           eg.push_back(ed[i]);
+           caykhung.dd[ed[i].a][ed[i].b] = ed[i].e; //Lưu cạnh này vào đồ thị chứa cây khung đang chọn để làm cây khung ngắn nhất.
+           caykhung.dd[ed[i].b][ed[i].a] = ed[i].e;
         }
+        
     }
 
-    prin(eg);
+    prin(eg); //In các cạnh cây khung
 
- 
 }
 
 int main()
 {
-      graph u;
-      readgraph(u);
-      Kruscal(u);
-      int a;
-      cin>> a;
+    graph u;
+    readgraph(u);
+    kruscal(u);
+    int trash; cin >> trash;
 }
