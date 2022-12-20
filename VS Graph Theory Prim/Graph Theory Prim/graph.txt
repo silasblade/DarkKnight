@@ -1,0 +1,13 @@
+6
+0 23 14 20 0 0 
+23 0 0 6 9 0 
+14 0 0 0 30 21 
+20 6 0 0 0 0 
+0 9 30 0 0 12
+0 0 21 0 12 0
+Hoc Mon
+Binh Tan
+Quan 12
+Binh Chanh
+Tan Binh
+Binh Thanh
