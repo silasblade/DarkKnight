@@ -7,6 +7,7 @@ using namespace std;
 
 bool visited[100];
 
+
 struct graph //Cấu trúc ma trận kề có trọng số của đồ thị
 {
     int sodinh = 0;
@@ -46,6 +47,7 @@ void readgraph(graph& u) //Hàm đọc ma trận từ đồ thị
 
 void cycle(int x, int y) //Hàm kiểm tra có tạo ra chu trình hay không
 {
+    //ĐỈnh đầu x, cuối y
     //Ý tưởng thuật toán: Đưa vào hai đỉnh của một cạnh. Xét tất cả các đỉnh liên thông với đỉnh đầu (đỉnh x(a)) của cạnh này. 
     //Các đối tượng xét chỉ bao gồm các cạnh đã chọn để sau này làm cây khung ngắn nhất.
     //Nếu trong số các đỉnh liên thông với đỉnh đầu bao gồm đỉnh cuối (đỉnh y(b)) của cạnh đó thì ghi nhận là tạo ra chu trình. Hủy thuật toán.
@@ -61,6 +63,19 @@ void cycle(int x, int y) //Hàm kiểm tra có tạo ra chu trình hay không
             cycle(i, y);
     }
 }
+/*
+x = 1, y = 3, e = 6;
+visited[1] = true;
+1
+
+0 0 0 0 0 0
+0 0 0 6 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+*/
+
 
 bool compare(edge a, edge b) //Hàm so sánh. Dùng để sử dụng hàm sort các struct.
 {
@@ -92,16 +107,16 @@ void prin(vector<edge> eg)//Hàm in các cạnh có trong cây khung
 void kruscal(graph u)
 {
     vector<edge> ed;                //Tập các cạnh tồn tại trong đồ thị
-    for (int i = 0; i < u.sodinh; i++)
-        for (int j = i; j < u.sodinh; j++)
+    for (int i = 0; i < u.sodinh; i++) 
+        for (int j = i; j < u.sodinh; j++) 
         {
-            if (u.dd[i][j])
+            if (u.dd[i][j]) //Điều kiện là cạnh được xét phải tồn tại (>0). 
             {
-                edge p;
+                edge p; //Tạo ra một cạnh tạm. 
                 p.a = i;
                 p.b = j;
                 p.e = u.dd[i][j];
-                ed.push_back(p);
+                ed.push_back(p); //Thêm cạnh tạm vừa tạo vào vector ed; 
             }
         }
 
@@ -113,6 +128,7 @@ void kruscal(graph u)
         makecycle = false;                 //Gán giá trị tạo chu trình = 0 để sử dụng cho hàm xét chu trình.
         for (int j = 0; j < u.sodinh; j++)    //Gán giá trị các cạnh đã xét = 0 để sử dụng cho hàm xét chu trình
             visited[j] = { false };
+  
 
         cycle(ed[i].a, ed[i].b);         //Xét tạo ra chu trình không
 
@@ -122,7 +138,6 @@ void kruscal(graph u)
             caykhung.dd[ed[i].a][ed[i].b] = ed[i].e; //Lưu cạnh này vào đồ thị chứa cây khung đang chọn để làm cây khung ngắn nhất.
             caykhung.dd[ed[i].b][ed[i].a] = ed[i].e;
         }
-
     }
 
     prin(eg); //In các cạnh cây khung
